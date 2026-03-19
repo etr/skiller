@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+*.swp
+*.swo
+*~
+.claude/settings.local.json

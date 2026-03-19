@@ -1,0 +1,9 @@
+{
+  "name": "skiller",
+  "description": "Instruments Claude Code sessions and analyzes behavioral gaps to suggest improvements",
+  "version": "0.1.0",
+  "author": {
+    "name": "Sebastiano Merlino"
+  },
+  "keywords": ["instrumentation", "analysis", "gaps", "sessions"]
+}
