@@ -6,14 +6,9 @@ Skiller silently records lifecycle events during your Claude Code sessions, then
 
 ## Installation
 
-Add the plugin to your Claude Code settings:
-
-```json
-{
-  "plugins": [
-    "/path/to/skiller"
-  ]
-}
+```bash
+claude plugin marketplace add etr/groundwork-marketplace
+claude plugin install skiller@groundwork-marketplace
 ```
 
 Session data is stored in `~/.claude/skiller/sessions/`.
