@@ -3,6 +3,8 @@
 import json
 import os
 import re
+import shutil
+from datetime import datetime, timedelta, timezone
 from fnmatch import fnmatch
 from pathlib import Path
 from urllib.parse import urlparse
@@ -10,6 +12,7 @@ from urllib.parse import urlparse
 SKILLER_ROOT = Path.home() / ".claude" / "skiller"
 SESSIONS_ROOT = SKILLER_ROOT / "sessions"
 REPORTS_ROOT = SKILLER_ROOT / "reports"
+STATE_ROOT = SKILLER_ROOT / "state"
 
 
 def get_sessions_root() -> Path:
@@ -254,3 +257,109 @@ def suggest_permission_pattern(tool_name: str, tool_input) -> str:
 
     # MCP tools, Agent, etc. — bare name
     return tool_name
+
+
+# ---------------------------------------------------------------------------
+# Session lifecycle utilities (recent-session analysis + auto-cleanup)
+# ---------------------------------------------------------------------------
+
+def get_session_start_time(session_dir: Path) -> datetime | None:
+    """Read first line of events.jsonl and parse its timestamp field."""
+    events_file = session_dir / "events.jsonl"
+    try:
+        with open(events_file) as f:
+            first_line = f.readline()
+        if not first_line.strip():
+            return None
+        event = json.loads(first_line)
+        return datetime.fromisoformat(event["timestamp"])
+    except Exception:
+        return None
+
+
+def get_analysis_marker(analysis_type: str) -> datetime | None:
+    """Return the last-run timestamp for the given analysis type, or None."""
+    markers_file = STATE_ROOT / "analysis-markers.json"
+    try:
+        data = json.loads(markers_file.read_text())
+        return datetime.fromisoformat(data[analysis_type])
+    except Exception:
+        return None
+
+
+def set_analysis_marker(analysis_type: str) -> None:
+    """Record current UTC time as the last-run marker for the given analysis type."""
+    STATE_ROOT.mkdir(parents=True, exist_ok=True)
+    markers_file = STATE_ROOT / "analysis-markers.json"
+    try:
+        data = json.loads(markers_file.read_text())
+    except Exception:
+        data = {}
+    data[analysis_type] = datetime.now(timezone.utc).isoformat()
+    markers_file.write_text(json.dumps(data, indent=2) + "\n")
+
+
+def get_eligible_sessions(analysis_type: str, max_age_days: int = 30) -> list[Path]:
+    """Return session dirs newer than max(marker_time, now - max_age_days), sorted."""
+    now = datetime.now(timezone.utc)
+    age_cutoff = now - timedelta(days=max_age_days)
+
+    marker = get_analysis_marker(analysis_type)
+    if marker is not None:
+        # Ensure marker is tz-aware for comparison
+        if marker.tzinfo is None:
+            marker = marker.replace(tzinfo=timezone.utc)
+        cutoff = max(marker, age_cutoff)
+    else:
+        cutoff = age_cutoff
+
+    if not SESSIONS_ROOT.exists():
+        return []
+
+    eligible: list[Path] = []
+    for session_dir in SESSIONS_ROOT.iterdir():
+        if not session_dir.is_dir():
+            continue
+        start_time = get_session_start_time(session_dir)
+        if start_time is None:
+            continue
+        if start_time.tzinfo is None:
+            start_time = start_time.replace(tzinfo=timezone.utc)
+        if start_time >= cutoff:
+            eligible.append(session_dir)
+
+    eligible.sort(key=lambda d: d.name)
+    return eligible
+
+
+def delete_old_sessions(max_age_days: int = 30) -> list[str]:
+    """Delete session dirs older than max_age_days. Returns deleted session IDs."""
+    if not SESSIONS_ROOT.exists():
+        return []
+
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(days=max_age_days)
+    deleted: list[str] = []
+
+    for session_dir in list(SESSIONS_ROOT.iterdir()):
+        if not session_dir.is_dir():
+            continue
+        start_time = get_session_start_time(session_dir)
+        if start_time is None:
+            # Fall back to events.jsonl mtime
+            events_file = session_dir / "events.jsonl"
+            try:
+                mtime = datetime.fromtimestamp(events_file.stat().st_mtime, tz=timezone.utc)
+                start_time = mtime
+            except Exception:
+                continue
+        if start_time.tzinfo is None:
+            start_time = start_time.replace(tzinfo=timezone.utc)
+        if start_time < cutoff:
+            try:
+                shutil.rmtree(session_dir)
+                deleted.append(session_dir.name)
+            except Exception:
+                pass
+
+    return deleted

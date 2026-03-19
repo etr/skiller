@@ -24,6 +24,7 @@ sys.path.insert(0, os.path.join(_plugin_root, "scripts"))
 
 from lib import (
     append_event,
+    delete_old_sessions,
     get_session_cwd,
     get_session_dir,
     is_pre_allowed,
@@ -174,6 +175,10 @@ def main():
         # Write cwd on session start (PRD-PERM-REQ-001)
         if hook_event == "SessionStart":
             write_session_cwd(event, session_dir)
+            try:
+                delete_old_sessions()
+            except Exception:
+                pass
 
         # Synthetic SubagentStart for Agent tool calls (PRD-INS-REQ-004)
         if hook_event == "PreToolUse" and event.get("tool_name") == "Agent":

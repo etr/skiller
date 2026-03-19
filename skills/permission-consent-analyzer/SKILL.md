@@ -18,17 +18,25 @@ You are running the Skiller permission analysis workflow. Your goal is to scan s
 
 ### Step 1: Scan Permission Grants
 
-Run the session scanner to extract permission grant patterns:
+First, get the cutoff timestamp so only new sessions since the last analysis are scanned:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/scan_permissions.py --min-sessions 1
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/session_manager.py cutoff --type permission-consent-analyzer
 ```
+
+Then run the session scanner with the cutoff to extract permission grant patterns:
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/scan_permissions.py --min-sessions 1 --since <CUTOFF_TIMESTAMP>
+```
+
+Replace `<CUTOFF_TIMESTAMP>` with the output from the cutoff command above.
 
 Use `--min-sessions 1` initially to see all data. If there are many patterns, the grouping step will filter noise.
 
 If the scanner returns no patterns, inform the user:
-- No `PermissionGrant` events were found in session data
-- This means either no sessions have been instrumented yet, or all tool calls in past sessions were already pre-allowed
+- No `PermissionGrant` events were found in new session data since the last analysis
+- This means either no new sessions have been instrumented, or all tool calls were already pre-allowed
 - Suggest the user run a few normal sessions and come back
 
 Parse the JSON output for the next steps.
@@ -104,6 +112,16 @@ Use the Edit tool to modify the settings file. If the file doesn't exist, use th
   }
 }
 ```
+
+### Step 7: Update Analysis Marker
+
+After successfully saving permissions (or if the user declines all patterns), mark the analysis as complete:
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/session_manager.py mark --type permission-consent-analyzer
+```
+
+Do NOT update the marker if no eligible sessions were found or if scanning failed.
 
 ## Edge Cases
 

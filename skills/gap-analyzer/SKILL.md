@@ -14,11 +14,17 @@ You are running the Skiller gap analysis workflow. Your goal is to analyze captu
 
 ## Workflow
 
-### Step 1: Discover Sessions
+### Step 1: Discover Eligible Sessions
 
-List all session directories under `~/.claude/skiller/sessions/`. Each session directory contains an `events.jsonl` file with structured event records.
+Run the session manager to get only sessions that haven't been analyzed yet (capped at 30 days):
 
-If no sessions are found, inform the user that no instrumented sessions exist yet and explain that sessions are captured automatically by the skiller hooks during normal Claude Code usage.
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/session_manager.py list --type gap-analyzer
+```
+
+Each returned path is a session directory containing an `events.jsonl` file with structured event records.
+
+If no sessions are returned, inform the user that no new sessions exist since the last analysis (or within the last 30 days) and explain that sessions are captured automatically by the skiller hooks during normal Claude Code usage.
 
 ### Step 2: Analyze Sessions
 
@@ -67,6 +73,16 @@ The report should follow the structure in `${CLAUDE_PLUGIN_ROOT}/skills/gap-anal
 - Feature suggestions with supporting evidence
 - Per-session breakdown
 - Any discovered novel gap categories
+
+### Step 5b: Update Analysis Marker
+
+After successfully writing the report, mark the analysis as complete so the next run only processes newer sessions:
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/session_manager.py mark --type gap-analyzer
+```
+
+Do NOT update the marker if no eligible sessions were found or if analysis failed.
 
 ### Step 6: Present Findings
 

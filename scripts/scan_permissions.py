@@ -13,12 +13,13 @@ import argparse
 import json
 import sys
 from collections import defaultdict
+from datetime import datetime, timezone
 from pathlib import Path
 
 SESSIONS_ROOT = Path.home() / ".claude" / "skiller" / "sessions"
 
 
-def scan_sessions(min_sessions: int = 3) -> dict:
+def scan_sessions(min_sessions: int = 3, since: datetime | None = None) -> dict:
     """Scan all sessions for PermissionGrant events."""
     if not SESSIONS_ROOT.exists():
         return {"patterns": [], "total_sessions": 0, "sessions_with_grants": 0}
@@ -38,6 +39,18 @@ def scan_sessions(min_sessions: int = 3) -> dict:
         events_file = session_dir / "events.jsonl"
         if not events_file.exists():
             continue
+
+        # --since filter: skip sessions older than the cutoff
+        if since is not None:
+            try:
+                first_line = events_file.read_text().split("\n", 1)[0]
+                ts = datetime.fromisoformat(json.loads(first_line)["timestamp"])
+                if ts.tzinfo is None:
+                    ts = ts.replace(tzinfo=timezone.utc)
+                if ts < since:
+                    continue
+            except Exception:
+                pass  # include session if timestamp is unparseable
 
         total_sessions += 1
         session_id = session_dir.name
@@ -120,9 +133,17 @@ def main():
     parser = argparse.ArgumentParser(description="Scan sessions for permission patterns")
     parser.add_argument("--min-sessions", type=int, default=3,
                         help="Minimum sessions a pattern must appear in (default: 3)")
+    parser.add_argument("--since", type=str, default=None,
+                        help="ISO 8601 timestamp; skip sessions older than this")
     args = parser.parse_args()
 
-    result = scan_sessions(min_sessions=args.min_sessions)
+    since = None
+    if args.since:
+        since = datetime.fromisoformat(args.since)
+        if since.tzinfo is None:
+            since = since.replace(tzinfo=timezone.utc)
+
+    result = scan_sessions(min_sessions=args.min_sessions, since=since)
     json.dump(result, sys.stdout, indent=2)
     print()
 
