@@ -73,6 +73,11 @@ Return a **single JSON object** (no markdown fencing, no extra text) with this s
         "incorrect_assertion": "...",
         "correction_source": "...",
         "actual_truth": "..."
+      },
+      "preliminary_solution": {
+        "solution_type": "settings_config | claude_md_guidance | plugin_component | platform_limitation",
+        "summary": "One-sentence fix description",
+        "mechanism": "How the fix works — what specifically to change or build"
       }
     }
   ],
@@ -90,6 +95,11 @@ Return a **single JSON object** (no markdown fencing, no extra text) with this s
 
 ## Guidelines
 
+- **For each gap, propose a preliminary solution** — your best guess at what would fix it. You are closest to the evidence, so your solution hint is valuable for downstream aggregation. Choose from:
+  - `settings_config`: Can be fixed with a settings.json or permissions change
+  - `claude_md_guidance`: Can be fixed by adding a rule to CLAUDE.md
+  - `plugin_component`: Needs a new hook, skill, command, agent, or script
+  - `platform_limitation`: Can't be fixed in the plugin; describe workaround if one exists
 - Be thorough but precise — only flag genuine gaps, not normal tool usage
 - A tool failing once and succeeding on retry is normal; flag it only if the retry count is excessive (3+)
 - Bash usage for git commands is normal; flag Bash only when it's compensating for a missing dedicated tool

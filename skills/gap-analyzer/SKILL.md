@@ -52,15 +52,30 @@ Once all session analyzers return, aggregate their findings:
 4. **Merge novel categories** — if multiple sessions propose the same novel category, consolidate with combined examples
 5. **Identify cross-session patterns** — gaps that appear in 3+ sessions are systemic
 
-### Step 4: Generate Feature Suggestions
+### Step 4: Generate Solution Proposals
 
-Based on the aggregated gaps, generate feature suggestions:
+Read the solution taxonomy at `${CLAUDE_PLUGIN_ROOT}/skills/gap-analyzer/references/solution-taxonomy.md`.
 
-- Each suggestion should address one or more related gaps
-- Include a clear title, description, and which gap types it addresses
-- Cite specific session examples as evidence
-- Prioritize by potential impact (how many sessions × how severe)
-- Be concrete and actionable — "Add a dedicated JSON schema validation tool" not "Improve tooling"
+Using the aggregated gaps and their `preliminary_solution` hints from session analyzers:
+
+1. **Group related gaps by root cause** — use `preliminary_solution` hints as clustering signals. Gaps with the same `solution_type` and similar `mechanism` likely share a root cause.
+
+2. **For each group, produce a structured Solution Proposal:**
+
+   - **Title**: Clear, specific name for the solution
+   - **Solution type**: `settings_config` | `claude_md_guidance` | `plugin_component` | `platform_limitation`
+   - **Effort**: `low` (settings/CLAUDE.md, apply in minutes) | `medium` (plugin component, hours to build) | `high` (platform limitation, no immediate fix)
+   - **Implementation path** (detail level varies by type):
+     - `settings_config`: Exact JSON snippet to add to settings
+     - `claude_md_guidance`: Exact rule text to add to CLAUDE.md, with suggested section
+     - `plugin_component`: Component type, description, directory structure, which existing component to use as template (e.g., `hooks/instrument.py` for hooks, `agents/session-analyzer.md` for agents), and key logic
+     - `platform_limitation`: What the limitation is, why it can't be fixed, and best workaround
+   - **Gaps addressed**: List of gap descriptions this solution covers
+   - **Evidence**: Specific session examples
+
+3. **Extract Quick Wins** — pull all `settings_config` and `claude_md_guidance` solutions into a separate Quick Wins list with copy-pasteable snippets the user can apply immediately.
+
+4. **Order solutions** by effort ascending within priority tiers (quick wins first, then plugin components, then platform limitations). Within the same effort level, order by impact × frequency descending.
 
 ### Step 5: Write Report
 

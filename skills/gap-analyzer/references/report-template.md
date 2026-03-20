@@ -20,15 +20,56 @@
 
 ---
 
-## Feature Suggestions
+## Quick Wins
 
-{{#each feature_suggestions}}
+Immediately actionable solutions — copy-paste these to apply.
+
+{{#each quick_wins}}
 ### {{rank}}. {{title}}
 
+**Type:** `{{solution_type}}` | **Effort:** {{effort}}
+
+{{summary}}
+
+{{#if implementation.snippet}}
+**Apply this:**
+```json
+{{implementation.snippet}}
+```
+{{/if}}
+
+{{#if implementation.rule_text}}
+**Add to `{{implementation.file}}`** (section: {{implementation.section}}):
+```
+{{implementation.rule_text}}
+```
+{{/if}}
+
+**Gaps addressed:**
+{{#each gaps_addressed}}
+- {{this}}
+{{/each}}
+
+{{/each}}
+
+{{#unless quick_wins}}
+No quick wins identified — all solutions require component development or are platform limitations.
+{{/unless}}
+
+---
+
+## Solution Proposals
+
+{{#each solution_proposals}}
+### {{rank}}. {{title}}
+
+**Type:** `{{solution_type}}` | **Effort:** {{effort}}
 **Addresses gaps:** {{gap_types}}
-**Estimated impact:** {{impact}}
 
 {{description}}
+
+**Implementation path:**
+{{implementation_path}}
 
 **Supporting evidence:**
 {{#each examples}}
