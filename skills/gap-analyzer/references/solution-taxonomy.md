@@ -26,6 +26,8 @@ This document defines the solution types for addressing gaps identified during C
     "change": "Exact JSON to add/modify",
     "snippet": "{ \"permissions\": { \"allow\": [\"Bash(npm test)\"] } }"
   },
+  "pros": ["Concrete benefit 1", "Concrete benefit 2"],
+  "cons": ["Potential downside or risk 1"],
   "evidence": ["session_id: context"]
 }
 ```
@@ -59,6 +61,8 @@ This document defines the solution types for addressing gaps identified during C
     "section": "Suggested section heading",
     "rule_text": "Exact text to add to CLAUDE.md"
   },
+  "pros": ["Concrete benefit 1", "Concrete benefit 2"],
+  "cons": ["Potential downside or risk 1"],
   "evidence": ["session_id: context"]
 }
 ```
@@ -95,6 +99,8 @@ This document defines the solution types for addressing gaps identified during C
     "template_reference": "Existing component to use as starting point",
     "key_logic": "Core behavior the component must implement"
   },
+  "pros": ["Concrete benefit 1", "Concrete benefit 2"],
+  "cons": ["Potential downside or risk 1"],
   "evidence": ["session_id: context"]
 }
 ```
@@ -136,6 +142,8 @@ This document defines the solution types for addressing gaps identified during C
     "workaround": "Best available workaround, if any",
     "workaround_effort": "low | medium | high | none"
   },
+  "pros": ["Concrete benefit of the workaround, if any"],
+  "cons": ["Why this remains a limitation", "Downsides of the workaround"],
   "evidence": ["session_id: context"]
 }
 ```

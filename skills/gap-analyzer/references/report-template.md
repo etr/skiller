@@ -45,6 +45,20 @@ Immediately actionable solutions — copy-paste these to apply.
 ```
 {{/if}}
 
+{{#if pros}}
+**Pros:**
+{{#each pros}}
+- {{this}}
+{{/each}}
+{{/if}}
+
+{{#if cons}}
+**Cons:**
+{{#each cons}}
+- {{this}}
+{{/each}}
+{{/if}}
+
 **Gaps addressed:**
 {{#each gaps_addressed}}
 - {{this}}
@@ -67,6 +81,16 @@ No quick wins identified — all solutions require component development or are 
 **Addresses gaps:** {{gap_types}}
 
 {{description}}
+
+**Pros:**
+{{#each pros}}
+- {{this}}
+{{/each}}
+
+**Cons:**
+{{#each cons}}
+- {{this}}
+{{/each}}
 
 **Implementation path:**
 {{implementation_path}}

@@ -70,6 +70,9 @@ Using the aggregated gaps and their `preliminary_solution` hints from session an
      - `claude_md_guidance`: Exact rule text to add to CLAUDE.md, with suggested section
      - `plugin_component`: Component type, description, directory structure, which existing component to use as template (e.g., `hooks/instrument.py` for hooks, `agents/session-analyzer.md` for agents), and key logic
      - `platform_limitation`: What the limitation is, why it can't be fixed, and best workaround
+   - **Pros/Cons**: A balanced assessment of the proposal to help the user decide whether to implement it:
+     - **Pros**: 2-4 concrete benefits (e.g., reduces friction, prevents recurring errors, low maintenance)
+     - **Cons**: 1-3 potential downsides or risks (e.g., over-permissive settings, stale guidance if project evolves, maintenance burden of new component, may mask underlying issues)
    - **Gaps addressed**: List of gap descriptions this solution covers
    - **Evidence**: Specific session examples
 
